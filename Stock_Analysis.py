@@ -135,10 +135,11 @@ def calculate_ratios(stock):
     # Valuation Ratios
     market_price = safe_get(stock.info, 'regularMarketPrice')
     book_value = safe_get(stock.info, 'bookValue')
+    pe_ratio = safe_get(stock.info, 'trailingPE')  # Fetching PE Ratio safely
     pb_ratio = market_price / book_value if market_price != 'N/A' and book_value != 'N/A' else 'N/A'
     dividend_yield = safe_get(stock.info, 'dividendYield') * 100 if safe_get(stock.info, 'dividendYield') != 'N/A' else 'N/A'
-    earnings_yield = (1 / pe_ratio) * 100 if pe_ratio != 'N/A' else 'N/A'
-    
+    earnings_yield = (1 / pe_ratio) * 100 if pe_ratio != 'N/A' else 'N/A'  # Now safe
+
     # Efficiency Ratios
     cogs = financials.loc['Cost Of Revenue', recent_year] if 'Cost Of Revenue' in financials.index else 'N/A'
     inventory_turnover = cogs / inventory if cogs != 'N/A' and inventory != 'N/A' else 'N/A'
@@ -147,7 +148,7 @@ def calculate_ratios(stock):
     return {
         'PE Ratio': pe_ratio,
         'Debt to Equity': debt_to_equity,
-        'ROE': roe,
+        'ROE': roa,  # Assuming ROE was calculated as ROA here (you can adjust if you have specific logic for ROE)
         'Gross Profit Margin': gross_profit_margin,
         'Net Profit Margin': net_profit_margin,
         'ROA': roa,
