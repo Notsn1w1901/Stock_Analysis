@@ -77,6 +77,12 @@ tickers_input = st.sidebar.text_input("Enter asset tickers (e.g., BBCA.JK, TSLA)
 start_date = st.sidebar.date_input("Start Date", pd.to_datetime("2020-01-01"))
 market_ticker_input = st.sidebar.text_input("Enter market index ticker (e.g., ^JKSE for Jakarta Composite Index IDX)", "^JKSE")
 
+# Dividend Discount Model Inputs
+st.sidebar.subheader("Dividend Discount Model Inputs")
+dividend = st.sidebar.number_input("Enter the latest dividend per share (D₀)", min_value=0.0, value=1.0, step=0.01)
+growth_rate = st.sidebar.number_input("Enter the dividend growth rate (g)", min_value=0.0, value=0.05, step=0.01)
+required_return = st.sidebar.number_input("Enter the required rate of return (r)", min_value=0.0, value=0.10, step=0.01)
+
 # Function to fetch stock data using yfinance
 def fetch_stock_data(symbol, start_date='2020-01-01', session=None):
     stock = yf.Ticker(symbol, session=session)
@@ -141,6 +147,14 @@ def display_financial_statements(stock):
     # Display cash flow statement
     st.subheader("Cash Flow Statement")
     st.dataframe(stock.cashflow.T)
+
+# Function to calculate stock price using the Dividend Discount Model (DDM)
+def calculate_ddm(dividend, growth_rate, required_return):
+    # DDM formula: P = D1 / (r - g)
+    # D1 = D0 * (1 + g) -> Expected dividend for next period
+    dividend_next_period = dividend * (1 + growth_rate)
+    stock_price = dividend_next_period / (required_return - growth_rate)
+    return stock_price
 
 # Main Streamlit App
 def main():
@@ -207,9 +221,13 @@ def main():
             # Display financial statements
             display_financial_statements(stock)
 
+            # Calculate and display DDM stock price estimation
+            stock_price_ddm = calculate_ddm(dividend, growth_rate, required_return)
+            st.subheader(f"Dividend Discount Model (DDM) Estimated Stock Price for {ticker}")
+            st.write(f"Estimated Stock Price using DDM: ${stock_price_ddm:.2f}")
+            
         else:
             st.error(f"No data found for {ticker} or {market_ticker_input}.")
 
 if __name__ == "__main__":
     main()
-
