@@ -75,7 +75,7 @@ st.sidebar.image("Designer.png", use_container_width=True)
 st.sidebar.header("Portfolio Inputs")
 tickers_input = st.sidebar.text_input("Enter asset tickers (e.g., BBCA.JK, TSLA)", "BBCA.JK")
 start_date = st.sidebar.date_input("Start Date", pd.to_datetime("2020-01-01"))
-market_ticker_input = st.sidebar.text_input("Enter market index ticker (e.g., ^GSPC for S&P 500)", "^GSPC")
+market_ticker_input = st.sidebar.text_input("Enter market index ticker (e.g., ^JKSE for Jakarta Composite Index IDX)", "^JKSE")
 
 # Function to fetch stock data using yfinance
 def fetch_stock_data(symbol, start_date='2020-01-01', session=None):
