@@ -88,16 +88,19 @@ def main():
     stock_data = fetch_stock_data(symbol, start_date=start_date.strftime("%Y-%m-%d"), session=session)
     
     # Display stock data
-    st.subheader("Stock Price Data")
-    st.line_chart(stock_data['Close'])
+    if not stock_data.empty:
+        st.subheader("Stock Price Data")
+        st.line_chart(stock_data['Close'])
     
-    # Fetch stock info and calculate ratios
-    stock = yf.Ticker(symbol, session=session)
-    ratios = calculate_ratios(stock)
+        # Fetch stock info and calculate ratios
+        stock = yf.Ticker(symbol, session=session)
+        ratios = calculate_ratios(stock)
     
-    # Display financial ratios
-    st.subheader("Financial Ratios")
-    st.write(ratios)
+        # Display financial ratios
+        st.subheader("Financial Ratios")
+        st.write(ratios)
+    else:
+        st.error("No data found for the given symbol.")
 
 if __name__ == "__main__":
     main()
