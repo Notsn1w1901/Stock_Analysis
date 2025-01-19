@@ -103,14 +103,14 @@ def fetch_yahoo_finance_statistics(stock):
     return_on_equity = safe_get(info, 'returnOnEquity') * 100 if 'returnOnEquity' in info else 'N/A'
     earnings_yield = (1 / pe_ratio) * 100 if pe_ratio != 'N/A' else 'N/A'
     
-    # Formatting values for percentages and multiples
+    # Formatting values for percentages and multiples with 2 decimal places
     statistics = {
-        'PE Ratio': pe_ratio,
+        'PE Ratio': f"{pe_ratio:.2f}" if pe_ratio != 'N/A' else 'N/A',
         'Market Cap': market_cap,
         'Dividend Yield': f"{dividend_yield * 100:.2f}%" if dividend_yield != 'N/A' else 'N/A',
-        'Price to Book': f"{price_to_book}x" if price_to_book != 'N/A' else 'N/A',
-        'Beta': beta,
-        'Diluted EPS': diluted_eps,
+        'Price to Book': f"{price_to_book:.2f}x" if price_to_book != 'N/A' else 'N/A',
+        'Beta': f"{beta:.2f}" if beta != 'N/A' else 'N/A',
+        'Diluted EPS': f"{diluted_eps:.2f}" if diluted_eps != 'N/A' else 'N/A',
         'Profit Margin': f"{profit_margin:.2f}%" if profit_margin != 'N/A' else 'N/A',
         'Operating Margin': f"{operating_margin:.2f}%" if operating_margin != 'N/A' else 'N/A',
         'Return on Asset': f"{return_on_assets:.2f}%" if return_on_assets != 'N/A' else 'N/A',
