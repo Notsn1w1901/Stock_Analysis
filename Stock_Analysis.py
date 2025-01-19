@@ -86,54 +86,56 @@ def fetch_stock_data(symbol, start_date='2020-01-01', session=None):
 def safe_get(data, key, default_value='N/A'):
     return data.get(key, default_value)
 
-# Function to calculate key financial ratios
+# Function to calculate key financial ratios based on the financial statements (balance sheet, income statement, and cash flow statement)
 def calculate_ratios(stock):
-    info = stock.info
-    financials = stock.financials
-    balance_sheet = stock.balance_sheet
-    cashflow = stock.cashflow
+    # Fetch the financial statements (balance sheet, income statement, cash flow statement)
+    balance_sheet = stock.balance_sheet.T  # Transpose for better readability
+    financials = stock.financials.T  # Income statement
+    cashflow = stock.cashflow.T  # Cash flow statement
     
     # Profitability Ratios
-    pe_ratio = safe_get(info, 'trailingPE')
-    roe = safe_get(info, 'returnOnEquity')
+    pe_ratio = safe_get(stock.info, 'trailingPE')
+    roe = safe_get(stock.info, 'returnOnEquity')
+
+    # Accessing data from financial statements (balance sheet and income statement)
+    gross_profit = financials.loc['Gross Profit', '2020'] if 'Gross Profit' in financials else 'N/A'
+    revenue = financials.loc['Total Revenue', '2020'] if 'Total Revenue' in financials else 'N/A'
+    net_income = financials.loc['Net Income', '2020'] if 'Net Income' in financials else 'N/A'
+    total_assets = balance_sheet.loc['Total Assets', '2020'] if 'Total Assets' in balance_sheet else 'N/A'
     
-    # Use a fallback if data is missing
-    gross_profit = financials.loc['Gross Profit'].iloc[0] if 'Gross Profit' in financials else safe_get(financials, 'Cost Of Revenue', 'N/A')
-    revenue = financials.loc['Total Revenue'].iloc[0] if 'Total Revenue' in financials else 'N/A'
-    net_income = financials.loc['Net Income'].iloc[0] if 'Net Income' in financials else 'N/A'
-    total_assets = balance_sheet.loc['Total Assets'].iloc[0] if 'Total Assets' in balance_sheet else 'N/A'
-    
-    # Handle potential division by zero or missing data
+    # Calculate profitability ratios (Ensure there's no division by zero)
     gross_profit_margin = (gross_profit / revenue) * 100 if gross_profit != 'N/A' and revenue != 'N/A' else 'N/A'
     net_profit_margin = (net_income / revenue) * 100 if net_income != 'N/A' and revenue != 'N/A' else 'N/A'
     roa = (net_income / total_assets) * 100 if net_income != 'N/A' and total_assets != 'N/A' else 'N/A'
     
     # Liquidity Ratios
-    current_assets = balance_sheet.loc['Total Current Assets'].iloc[0] if 'Total Current Assets' in balance_sheet else 'N/A'
-    current_liabilities = balance_sheet.loc['Total Current Liabilities'].iloc[0] if 'Total Current Liabilities' in balance_sheet else 'N/A'
+    current_assets = balance_sheet.loc['Total Current Assets', '2020'] if 'Total Current Assets' in balance_sheet else 'N/A'
+    current_liabilities = balance_sheet.loc['Total Current Liabilities', '2020'] if 'Total Current Liabilities' in balance_sheet else 'N/A'
+    inventory = balance_sheet.loc['Inventory', '2020'] if 'Inventory' in balance_sheet else 'N/A'
+    
+    # Current and Quick Ratios
     current_ratio = current_assets / current_liabilities if current_assets != 'N/A' and current_liabilities != 'N/A' else 'N/A'
-    inventory = balance_sheet.loc['Inventory'].iloc[0] if 'Inventory' in balance_sheet else 'N/A'
     quick_ratio = (current_assets - inventory) / current_liabilities if current_assets != 'N/A' and inventory != 'N/A' and current_liabilities != 'N/A' else 'N/A'
     
     # Solvency Ratios
-    total_debt = balance_sheet.loc['Total Debt'].iloc[0] if 'Total Debt' in balance_sheet else 'N/A'
-    shareholders_equity = balance_sheet.loc['Total Stockholder Equity'].iloc[0] if 'Total Stockholder Equity' in balance_sheet else 'N/A'
+    total_debt = balance_sheet.loc['Total Debt', '2020'] if 'Total Debt' in balance_sheet else 'N/A'
+    shareholders_equity = balance_sheet.loc['Total Stockholder Equity', '2020'] if 'Total Stockholder Equity' in balance_sheet else 'N/A'
     debt_to_equity = total_debt / shareholders_equity if total_debt != 'N/A' and shareholders_equity != 'N/A' else 'N/A'
     
-    # Fallback if interest expense or EBIT is missing
-    interest_expense = cashflow.loc['Interest Expense'].iloc[0] if 'Interest Expense' in cashflow else 'N/A'
-    ebit = financials.loc['EBIT'].iloc[0] if 'EBIT' in financials else 'N/A'
+    # Interest coverage ratio
+    ebit = financials.loc['EBIT', '2020'] if 'EBIT' in financials else 'N/A'
+    interest_expense = cashflow.loc['Interest Expense', '2020'] if 'Interest Expense' in cashflow else 'N/A'
     interest_coverage = ebit / interest_expense if ebit != 'N/A' and interest_expense != 'N/A' else 'N/A'
     
     # Valuation Ratios
-    market_price = safe_get(info, 'regularMarketPrice')
-    book_value = safe_get(info, 'bookValue')
+    market_price = safe_get(stock.info, 'regularMarketPrice')
+    book_value = safe_get(stock.info, 'bookValue')
     pb_ratio = market_price / book_value if market_price != 'N/A' and book_value != 'N/A' else 'N/A'
-    dividend_yield = safe_get(info, 'dividendYield') * 100 if safe_get(info, 'dividendYield') != 'N/A' else 'N/A'
+    dividend_yield = safe_get(stock.info, 'dividendYield') * 100 if safe_get(stock.info, 'dividendYield') != 'N/A' else 'N/A'
     earnings_yield = (1 / pe_ratio) * 100 if pe_ratio != 'N/A' else 'N/A'
     
     # Efficiency Ratios
-    cogs = financials.loc['Cost Of Revenue'].iloc[0] if 'Cost Of Revenue' in financials else 'N/A'
+    cogs = financials.loc['Cost Of Revenue', '2020'] if 'Cost Of Revenue' in financials else 'N/A'
     inventory_turnover = cogs / inventory if cogs != 'N/A' and inventory != 'N/A' else 'N/A'
     asset_turnover = revenue / total_assets if revenue != 'N/A' and total_assets != 'N/A' else 'N/A'
     
