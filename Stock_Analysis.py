@@ -96,9 +96,19 @@ def main():
         stock = yf.Ticker(symbol, session=session)
         ratios = calculate_ratios(stock)
     
-        # Display financial ratios
+        # Display financial ratios with a box design
         st.subheader("Financial Ratios")
-        st.write(ratios)
+        with st.beta_container():
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                for ratio, value in list(ratios.items())[:8]:
+                    st.markdown(f"**{ratio}**: {value if value else 'N/A'}")
+            
+            with col2:
+                for ratio, value in list(ratios.items())[8:]:
+                    st.markdown(f"**{ratio}**: {value if value else 'N/A'}")
+                
     else:
         st.error("No data found for the given symbol.")
 
