@@ -70,6 +70,12 @@ st.markdown("""
 # Title of the app
 st.title('📈 Stock Fundamental Analysis Dashboard')
 
+# Sidebar Inputs for User Interactivity
+st.sidebar.image("Designer.png", use_container_width=True)
+st.sidebar.header("Portfolio Inputs")
+tickers_input = st.sidebar.text_input("Enter asset tickers (e.g., BBCA.JK, TSLA)", "BBCA.JK)
+start_date = st.sidebar.date_input("Start Date", pd.to_datetime("2020-01-01"))
+
 # Function to fetch stock data using yfinance
 def fetch_stock_data(symbol, start_date='2020-01-01', session=None):
     stock = yf.Ticker(symbol, session=session)
@@ -77,8 +83,8 @@ def fetch_stock_data(symbol, start_date='2020-01-01', session=None):
     return df
 
 # Safe method to handle missing data
-def safe_get(data, key):
-    return data.get(key, None) if key in data else None
+def safe_get(data, key, default_value='N/A'):
+    return data.get(key, default_value)
 
 # Function to calculate key financial ratios
 def calculate_ratios(stock):
@@ -90,41 +96,46 @@ def calculate_ratios(stock):
     # Profitability Ratios
     pe_ratio = safe_get(info, 'trailingPE')
     roe = safe_get(info, 'returnOnEquity')
-    gross_profit = financials.loc['Gross Profit'].iloc[0] if 'Gross Profit' in financials else None
-    revenue = financials.loc['Total Revenue'].iloc[0] if 'Total Revenue' in financials else None
-    net_income = financials.loc['Net Income'].iloc[0] if 'Net Income' in financials else None
-    total_assets = balance_sheet.loc['Total Assets'].iloc[0] if 'Total Assets' in balance_sheet else None
     
-    gross_profit_margin = (gross_profit / revenue) * 100 if gross_profit and revenue else 'Data Missing'
-    net_profit_margin = (net_income / revenue) * 100 if net_income and revenue else 'Data Missing'
-    roa = (net_income / total_assets) * 100 if net_income and total_assets else 'Data Missing'
+    # Use a fallback if data is missing
+    gross_profit = financials.loc['Gross Profit'].iloc[0] if 'Gross Profit' in financials else safe_get(financials, 'Cost Of Revenue', 'N/A')
+    revenue = financials.loc['Total Revenue'].iloc[0] if 'Total Revenue' in financials else 'N/A'
+    net_income = financials.loc['Net Income'].iloc[0] if 'Net Income' in financials else 'N/A'
+    total_assets = balance_sheet.loc['Total Assets'].iloc[0] if 'Total Assets' in balance_sheet else 'N/A'
+    
+    # Handle potential division by zero or missing data
+    gross_profit_margin = (gross_profit / revenue) * 100 if gross_profit != 'N/A' and revenue != 'N/A' else 'N/A'
+    net_profit_margin = (net_income / revenue) * 100 if net_income != 'N/A' and revenue != 'N/A' else 'N/A'
+    roa = (net_income / total_assets) * 100 if net_income != 'N/A' and total_assets != 'N/A' else 'N/A'
     
     # Liquidity Ratios
-    current_assets = balance_sheet.loc['Total Current Assets'].iloc[0] if 'Total Current Assets' in balance_sheet else None
-    current_liabilities = balance_sheet.loc['Total Current Liabilities'].iloc[0] if 'Total Current Liabilities' in balance_sheet else None
-    current_ratio = current_assets / current_liabilities if current_assets and current_liabilities else 'Data Missing'
-    inventory = balance_sheet.loc['Inventory'].iloc[0] if 'Inventory' in balance_sheet else None
-    quick_ratio = (current_assets - inventory) / current_liabilities if current_assets and inventory and current_liabilities else 'Data Missing'
+    current_assets = balance_sheet.loc['Total Current Assets'].iloc[0] if 'Total Current Assets' in balance_sheet else 'N/A'
+    current_liabilities = balance_sheet.loc['Total Current Liabilities'].iloc[0] if 'Total Current Liabilities' in balance_sheet else 'N/A'
+    current_ratio = current_assets / current_liabilities if current_assets != 'N/A' and current_liabilities != 'N/A' else 'N/A'
+    inventory = balance_sheet.loc['Inventory'].iloc[0] if 'Inventory' in balance_sheet else 'N/A'
+    quick_ratio = (current_assets - inventory) / current_liabilities if current_assets != 'N/A' and inventory != 'N/A' and current_liabilities != 'N/A' else 'N/A'
     
     # Solvency Ratios
-    total_debt = balance_sheet.loc['Total Debt'].iloc[0] if 'Total Debt' in balance_sheet else None
-    shareholders_equity = balance_sheet.loc['Total Stockholder Equity'].iloc[0] if 'Total Stockholder Equity' in balance_sheet else None
-    debt_to_equity = total_debt / shareholders_equity if total_debt and shareholders_equity else 'Data Missing'
-    interest_expense = cashflow.loc['Interest Expense'].iloc[0] if 'Interest Expense' in cashflow else None
-    ebit = financials.loc['EBIT'].iloc[0] if 'EBIT' in financials else None
-    interest_coverage = ebit / interest_expense if ebit and interest_expense else 'Data Missing'
+    total_debt = balance_sheet.loc['Total Debt'].iloc[0] if 'Total Debt' in balance_sheet else 'N/A'
+    shareholders_equity = balance_sheet.loc['Total Stockholder Equity'].iloc[0] if 'Total Stockholder Equity' in balance_sheet else 'N/A'
+    debt_to_equity = total_debt / shareholders_equity if total_debt != 'N/A' and shareholders_equity != 'N/A' else 'N/A'
+    
+    # Fallback if interest expense or EBIT is missing
+    interest_expense = cashflow.loc['Interest Expense'].iloc[0] if 'Interest Expense' in cashflow else 'N/A'
+    ebit = financials.loc['EBIT'].iloc[0] if 'EBIT' in financials else 'N/A'
+    interest_coverage = ebit / interest_expense if ebit != 'N/A' and interest_expense != 'N/A' else 'N/A'
     
     # Valuation Ratios
     market_price = safe_get(info, 'regularMarketPrice')
     book_value = safe_get(info, 'bookValue')
-    pb_ratio = market_price / book_value if market_price and book_value else 'Data Missing'
-    dividend_yield = safe_get(info, 'dividendYield') * 100 if safe_get(info, 'dividendYield') else 'Data Missing'
-    earnings_yield = (1 / pe_ratio) * 100 if pe_ratio else 'Data Missing'
+    pb_ratio = market_price / book_value if market_price != 'N/A' and book_value != 'N/A' else 'N/A'
+    dividend_yield = safe_get(info, 'dividendYield') * 100 if safe_get(info, 'dividendYield') != 'N/A' else 'N/A'
+    earnings_yield = (1 / pe_ratio) * 100 if pe_ratio != 'N/A' else 'N/A'
     
     # Efficiency Ratios
-    cogs = financials.loc['Cost Of Revenue'].iloc[0] if 'Cost Of Revenue' in financials else None
-    inventory_turnover = cogs / inventory if cogs and inventory else 'Data Missing'
-    asset_turnover = revenue / total_assets if revenue and total_assets else 'Data Missing'
+    cogs = financials.loc['Cost Of Revenue'].iloc[0] if 'Cost Of Revenue' in financials else 'N/A'
+    inventory_turnover = cogs / inventory if cogs != 'N/A' and inventory != 'N/A' else 'N/A'
+    asset_turnover = revenue / total_assets if revenue != 'N/A' and total_assets != 'N/A' else 'N/A'
     
     return {
         'PE Ratio': pe_ratio,
@@ -145,59 +156,61 @@ def calculate_ratios(stock):
 
 # Main Streamlit App
 def main():
-    # User input for stock symbol
-    symbol = st.text_input("Enter Stock Symbol (e.g., AAPL, GOOGL, BBCA.JK):", value="BBCA.JK")
-    start_date = st.date_input("Start Date", pd.to_datetime("2020-01-01"))
+    # Parse tickers input from the sidebar
+    tickers = tickers_input.split(",")
     
     # Set up a session with custom headers to avoid 401 Unauthorized errors
     session = requests.Session()
     session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36'})
     
-    # Fetch stock data
-    stock_data = fetch_stock_data(symbol, start_date=start_date.strftime("%Y-%m-%d"), session=session)
-    
-    # Display stock data
-    if not stock_data.empty:
-        st.subheader("Stock Price Data")
-        st.line_chart(stock_data['Close'])
-    
-        # Fetch stock info and calculate ratios
-        stock = yf.Ticker(symbol, session=session)
-        ratios = calculate_ratios(stock)
-    
-        # Display financial ratios in metric cards
-        st.subheader("Financial Ratios")
-        cols = st.columns(3)
+    for ticker in tickers:
+        ticker = ticker.strip()  # Clean ticker input
         
-        # Display ratios with custom CSS as metric cards
-        ratios_dict = {
-            "PE Ratio": ratios['PE Ratio'],
-            "Debt to Equity": ratios['Debt to Equity'],
-            "ROE": ratios['ROE'],
-            "Gross Profit Margin": ratios['Gross Profit Margin'],
-            "Net Profit Margin": ratios['Net Profit Margin'],
-            "ROA": ratios['ROA'],
-            "Current Ratio": ratios['Current Ratio'],
-            "Quick Ratio": ratios['Quick Ratio'],
-            "Interest Coverage Ratio": ratios['Interest Coverage Ratio'],
-            "P/B Ratio": ratios['P/B Ratio'],
-            "Dividend Yield": ratios['Dividend Yield'],
-            "Earnings Yield": ratios['Earnings Yield'],
-            "Inventory Turnover": ratios['Inventory Turnover'],
-            "Asset Turnover": ratios['Asset Turnover']
-        }
+        # Fetch stock data
+        stock_data = fetch_stock_data(ticker, start_date=start_date.strftime("%Y-%m-%d"), session=session)
         
-        for idx, (key, value) in enumerate(ratios_dict.items()):
-            col = cols[idx % 3]
-            col.markdown(f"""
-            <div class="metric-card">
-                <h3>{key}</h3>
-                <div class="value">{value}</div>
-            </div>
-            """, unsafe_allow_html=True)
+        # Display stock data
+        if not stock_data.empty:
+            st.subheader(f"Stock Price Data for {ticker}")
+            st.line_chart(stock_data['Close'])
+        
+            # Fetch stock info and calculate ratios
+            stock = yf.Ticker(ticker, session=session)
+            ratios = calculate_ratios(stock)
+        
+            # Display financial ratios in metric cards
+            st.subheader(f"Financial Ratios for {ticker}")
+            cols = st.columns(3)
+            
+            # Display ratios with custom CSS as metric cards
+            ratios_dict = {
+                "PE Ratio": ratios['PE Ratio'],
+                "Debt to Equity": ratios['Debt to Equity'],
+                "ROE": ratios['ROE'],
+                "Gross Profit Margin": ratios['Gross Profit Margin'],
+                "Net Profit Margin": ratios['Net Profit Margin'],
+                "ROA": ratios['ROA'],
+                "Current Ratio": ratios['Current Ratio'],
+                "Quick Ratio": ratios['Quick Ratio'],
+                "Interest Coverage Ratio": ratios['Interest Coverage Ratio'],
+                "P/B Ratio": ratios['P/B Ratio'],
+                "Dividend Yield": ratios['Dividend Yield'],
+                "Earnings Yield": ratios['Earnings Yield'],
+                "Inventory Turnover": ratios['Inventory Turnover'],
+                "Asset Turnover": ratios['Asset Turnover']
+            }
+            
+            for idx, (key, value) in enumerate(ratios_dict.items()):
+                col = cols[idx % 3]
+                col.markdown(f"""
+                <div class="metric-card">
+                    <h3>{key}</h3>
+                    <div class="value">{value}</div>
+                </div>
+                """, unsafe_allow_html=True)
 
-    else:
-        st.error("No data found for the given symbol.")
+        else:
+            st.error(f"No data found for {ticker}.")
 
 if __name__ == "__main__":
     main()
