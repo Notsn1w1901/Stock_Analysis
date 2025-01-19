@@ -93,10 +93,10 @@ def calculate_ratios(stock):
     financials = stock.financials.T  # Income statement
     cashflow = stock.cashflow.T  # Cash flow statement
     
-    # Profitability Ratios
-    pe_ratio = safe_get(stock.info, 'trailingPE')
-    roe = safe_get(stock.info, 'returnOnEquity')
-
+    # Check if financials have columns and rows
+    if financials.empty:
+        return "Financial data not available"
+    
     # Get the most recent year available in the financials data
     recent_year = financials.columns[0] if len(financials.columns) > 0 else None
     if not recent_year:
