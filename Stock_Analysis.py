@@ -103,10 +103,10 @@ def calculate_ratios(stock):
         return "No data available"
 
     # Accessing data from financial statements (balance sheet and income statement)
-    gross_profit = financials.loc['Gross Profit', recent_year] if 'Gross Profit' in financials else 'N/A'
-    revenue = financials.loc['Total Revenue', recent_year] if 'Total Revenue' in financials else 'N/A'
-    net_income = financials.loc['Net Income', recent_year] if 'Net Income' in financials else 'N/A'
-    total_assets = balance_sheet.loc['Total Assets', recent_year] if 'Total Assets' in balance_sheet else 'N/A'
+    gross_profit = financials.loc['Gross Profit', recent_year] if 'Gross Profit' in financials.index else 'N/A'
+    revenue = financials.loc['Total Revenue', recent_year] if 'Total Revenue' in financials.index else 'N/A'
+    net_income = financials.loc['Net Income', recent_year] if 'Net Income' in financials.index else 'N/A'
+    total_assets = balance_sheet.loc['Total Assets', recent_year] if 'Total Assets' in balance_sheet.index else 'N/A'
     
     # Calculate profitability ratios (Ensure there's no division by zero)
     gross_profit_margin = (gross_profit / revenue) * 100 if gross_profit != 'N/A' and revenue != 'N/A' else 'N/A'
@@ -114,22 +114,22 @@ def calculate_ratios(stock):
     roa = (net_income / total_assets) * 100 if net_income != 'N/A' and total_assets != 'N/A' else 'N/A'
     
     # Liquidity Ratios
-    current_assets = balance_sheet.loc['Total Current Assets', recent_year] if 'Total Current Assets' in balance_sheet else 'N/A'
-    current_liabilities = balance_sheet.loc['Total Current Liabilities', recent_year] if 'Total Current Liabilities' in balance_sheet else 'N/A'
-    inventory = balance_sheet.loc['Inventory', recent_year] if 'Inventory' in balance_sheet else 'N/A'
+    current_assets = balance_sheet.loc['Total Current Assets', recent_year] if 'Total Current Assets' in balance_sheet.index else 'N/A'
+    current_liabilities = balance_sheet.loc['Total Current Liabilities', recent_year] if 'Total Current Liabilities' in balance_sheet.index else 'N/A'
+    inventory = balance_sheet.loc['Inventory', recent_year] if 'Inventory' in balance_sheet.index else 'N/A'
     
     # Current and Quick Ratios
     current_ratio = current_assets / current_liabilities if current_assets != 'N/A' and current_liabilities != 'N/A' else 'N/A'
     quick_ratio = (current_assets - inventory) / current_liabilities if current_assets != 'N/A' and inventory != 'N/A' and current_liabilities != 'N/A' else 'N/A'
     
     # Solvency Ratios
-    total_debt = balance_sheet.loc['Total Debt', recent_year] if 'Total Debt' in balance_sheet else 'N/A'
-    shareholders_equity = balance_sheet.loc['Total Stockholder Equity', recent_year] if 'Total Stockholder Equity' in balance_sheet else 'N/A'
+    total_debt = balance_sheet.loc['Total Debt', recent_year] if 'Total Debt' in balance_sheet.index else 'N/A'
+    shareholders_equity = balance_sheet.loc['Total Stockholder Equity', recent_year] if 'Total Stockholder Equity' in balance_sheet.index else 'N/A'
     debt_to_equity = total_debt / shareholders_equity if total_debt != 'N/A' and shareholders_equity != 'N/A' else 'N/A'
     
     # Interest coverage ratio
-    ebit = financials.loc['EBIT', recent_year] if 'EBIT' in financials else 'N/A'
-    interest_expense = cashflow.loc['Interest Expense', recent_year] if 'Interest Expense' in cashflow else 'N/A'
+    ebit = financials.loc['EBIT', recent_year] if 'EBIT' in financials.index else 'N/A'
+    interest_expense = cashflow.loc['Interest Expense', recent_year] if 'Interest Expense' in cashflow.index else 'N/A'
     interest_coverage = ebit / interest_expense if ebit != 'N/A' and interest_expense != 'N/A' else 'N/A'
     
     # Valuation Ratios
@@ -140,7 +140,7 @@ def calculate_ratios(stock):
     earnings_yield = (1 / pe_ratio) * 100 if pe_ratio != 'N/A' else 'N/A'
     
     # Efficiency Ratios
-    cogs = financials.loc['Cost Of Revenue', recent_year] if 'Cost Of Revenue' in financials else 'N/A'
+    cogs = financials.loc['Cost Of Revenue', recent_year] if 'Cost Of Revenue' in financials.index else 'N/A'
     inventory_turnover = cogs / inventory if cogs != 'N/A' and inventory != 'N/A' else 'N/A'
     asset_turnover = revenue / total_assets if revenue != 'N/A' and total_assets != 'N/A' else 'N/A'
     
