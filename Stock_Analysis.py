@@ -4,6 +4,72 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import requests
 
+# Streamlit app structure
+st.set_page_config(page_title="Stock Fundamental Analysis", layout="wide", initial_sidebar_state="expanded")
+
+# Custom CSS for rounded squares for metrics
+st.markdown("""
+<style>
+    /* Metric Card Styles */
+    .metric-card {
+        background: linear-gradient(145deg, #6a8dff, #4CAF50);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .metric-card:hover {
+        transform: scale(1.05);
+    }
+
+    .metric-card h3 {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: white;
+        margin-bottom: 10px;
+    }
+
+    .metric-card .value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #ffffff;
+    }
+
+    .metric-card .icon {
+        font-size: 2rem;
+        color: white;
+        margin-bottom: 10px;
+    }
+
+    /* Green for return, Red for risk */
+    .metric-return {
+        background: linear-gradient(145deg, #81C784, #388E3C);
+    }
+
+    .metric-risk {
+        background: linear-gradient(145deg, #FF7043, #D32F2F);
+    }
+
+    .metric-drawdown {
+        background: linear-gradient(145deg, #FFB74D, #F57C00);
+    }
+
+    .metric-sharpe {
+        background: linear-gradient(145deg, #64B5F6, #1976D2);
+    }
+
+    .metric-other {
+        background: linear-gradient(145deg, #80DEEA, #26C6DA);
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Title of the app
+st.title('📈 Stock Fundamental Analysis Dashboard')
+
 # Function to fetch stock data using yfinance
 def fetch_stock_data(symbol, start_date='2020-01-01', session=None):
     stock = yf.Ticker(symbol, session=session)
@@ -79,10 +145,8 @@ def calculate_ratios(stock):
 
 # Main Streamlit App
 def main():
-    st.title("Stock Fundamental Analysis Dashboard")
-    
     # User input for stock symbol
-    symbol = st.text_input("Enter Stock Symbol (e.g., AAPL, GOOGL, NISP.JK):", value="NISP.JK")
+    symbol = st.text_input("Enter Stock Symbol (e.g., AAPL, GOOGL, BBCA.JK):", value="BBCA.JK")
     start_date = st.date_input("Start Date", pd.to_datetime("2020-01-01"))
     
     # Set up a session with custom headers to avoid 401 Unauthorized errors
@@ -101,25 +165,37 @@ def main():
         stock = yf.Ticker(symbol, session=session)
         ratios = calculate_ratios(stock)
     
-        # Display financial ratios
+        # Display financial ratios in metric cards
         st.subheader("Financial Ratios")
+        cols = st.columns(3)
         
-        # Display ratios in a box
-        with st.container():
-            st.write("**PE Ratio**: ", ratios['PE Ratio'])
-            st.write("**Debt to Equity Ratio**: ", ratios['Debt to Equity'])
-            st.write("**ROE**: ", ratios['ROE'])
-            st.write("**Gross Profit Margin**: ", ratios['Gross Profit Margin'])
-            st.write("**Net Profit Margin**: ", ratios['Net Profit Margin'])
-            st.write("**ROA**: ", ratios['ROA'])
-            st.write("**Current Ratio**: ", ratios['Current Ratio'])
-            st.write("**Quick Ratio**: ", ratios['Quick Ratio'])
-            st.write("**Interest Coverage Ratio**: ", ratios['Interest Coverage Ratio'])
-            st.write("**P/B Ratio**: ", ratios['P/B Ratio'])
-            st.write("**Dividend Yield**: ", ratios['Dividend Yield'])
-            st.write("**Earnings Yield**: ", ratios['Earnings Yield'])
-            st.write("**Inventory Turnover**: ", ratios['Inventory Turnover'])
-            st.write("**Asset Turnover**: ", ratios['Asset Turnover'])
+        # Display ratios with custom CSS as metric cards
+        ratios_dict = {
+            "PE Ratio": ratios['PE Ratio'],
+            "Debt to Equity": ratios['Debt to Equity'],
+            "ROE": ratios['ROE'],
+            "Gross Profit Margin": ratios['Gross Profit Margin'],
+            "Net Profit Margin": ratios['Net Profit Margin'],
+            "ROA": ratios['ROA'],
+            "Current Ratio": ratios['Current Ratio'],
+            "Quick Ratio": ratios['Quick Ratio'],
+            "Interest Coverage Ratio": ratios['Interest Coverage Ratio'],
+            "P/B Ratio": ratios['P/B Ratio'],
+            "Dividend Yield": ratios['Dividend Yield'],
+            "Earnings Yield": ratios['Earnings Yield'],
+            "Inventory Turnover": ratios['Inventory Turnover'],
+            "Asset Turnover": ratios['Asset Turnover']
+        }
+        
+        for idx, (key, value) in enumerate(ratios_dict.items()):
+            col = cols[idx % 3]
+            col.markdown(f"""
+            <div class="metric-card">
+                <h3>{key}</h3>
+                <div class="value">{value}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
     else:
         st.error("No data found for the given symbol.")
 
