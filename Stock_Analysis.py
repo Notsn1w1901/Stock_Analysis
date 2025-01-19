@@ -73,7 +73,7 @@ st.title('📈 Stock Fundamental Analysis Dashboard')
 # Sidebar Inputs for User Interactivity
 st.sidebar.image("Designer.png", use_container_width=True)
 st.sidebar.header("Portfolio Inputs")
-tickers_input = st.sidebar.text_input("Enter asset tickers (e.g., BBCA.JK, TSLA)", "BBCA.JK)
+tickers_input = st.sidebar.text_input("Enter asset tickers (e.g., BBCA.JK, TSLA)", "BBCA.JK")
 start_date = st.sidebar.date_input("Start Date", pd.to_datetime("2020-01-01"))
 
 # Function to fetch stock data using yfinance
