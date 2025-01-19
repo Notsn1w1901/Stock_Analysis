@@ -86,18 +86,6 @@ def fetch_stock_data(symbol, start_date='2020-01-01', session=None):
 def safe_get(data, key, default_value='N/A'):
     return data.get(key, default_value)
 
-# Function to fetch company details (sector, industry, etc.)
-def fetch_company_details(stock):
-    info = stock.info
-    sector = safe_get(info, 'sector')
-    industry = safe_get(info, 'industry')
-    return sector, industry
-
-# Function to fetch company news
-def fetch_company_news(stock):
-    news = stock.news
-    return news[:5]  # Get top 5 news articles
-
 # Function to calculate key financial ratios
 def calculate_ratios(stock):
     info = stock.info
@@ -166,6 +154,18 @@ def calculate_ratios(stock):
         'Asset Turnover': asset_turnover
     }
 
+# Function to fetch company details (sector and industry)
+def fetch_company_details(stock):
+    info = stock.info
+    sector = safe_get(info, 'sector')
+    industry = safe_get(info, 'industry')
+    return sector, industry
+
+# Function to fetch company news
+def fetch_company_news(stock):
+    news = stock.news
+    return news[:5]  # Get top 5 news articles
+
 # Main Streamlit App
 def main():
     # Parse tickers input from the sidebar
@@ -202,8 +202,10 @@ def main():
             # Display news
             st.subheader(f"Latest News for {ticker}")
             for article in news:
-                st.write(f"**{article['title']}**")
-                st.write(f"[Read more]({article['link']})")
+                title = article.get('title', 'No title available')  # Safely get title
+                link = article.get('link', '#')  # Safely get link
+                st.write(f"**{title}**")
+                st.write(f"[Read more]({link})")
         
             # Display financial ratios in metric cards
             st.subheader(f"Financial Ratios for {ticker}")
