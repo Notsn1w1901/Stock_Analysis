@@ -75,6 +75,7 @@ st.sidebar.image("Designer.png", use_container_width=True)
 st.sidebar.header("Portfolio Inputs")
 tickers_input = st.sidebar.text_input("Enter asset tickers (e.g., BBCA.JK, TSLA)", "BBCA.JK")
 start_date = st.sidebar.date_input("Start Date", pd.to_datetime("2020-01-01"))
+market_ticker_input = st.sidebar.text_input("Enter market index ticker (e.g., ^GSPC for S&P 500)", "^GSPC")
 
 # Function to fetch stock data using yfinance
 def fetch_stock_data(symbol, start_date='2020-01-01', session=None):
@@ -156,10 +157,26 @@ def main():
         # Fetch stock data
         stock_data = fetch_stock_data(ticker, start_date=start_date.strftime("%Y-%m-%d"), session=session)
         
+        # Fetch market index data
+        market_data = fetch_stock_data(market_ticker_input, start_date=start_date.strftime("%Y-%m-%d"), session=session)
+        
         # Display stock data
-        if not stock_data.empty:
-            st.subheader(f"Stock Price Data for {ticker}")
-            st.line_chart(stock_data['Close'])
+        if not stock_data.empty and not market_data.empty:
+            st.subheader(f"Stock Price Data for {ticker} and Market Returns ({market_ticker_input})")
+            
+            # Normalize both stock and market data for comparison
+            stock_data['Normalized'] = stock_data['Close'] / stock_data['Close'].iloc[0] * 100
+            market_data['Normalized'] = market_data['Close'] / market_data['Close'].iloc[0] * 100
+            
+            # Plot both stock and market returns on the same chart
+            plt.figure(figsize=(10, 6))
+            plt.plot(stock_data.index, stock_data['Normalized'], label=f"{ticker} Returns", color='blue')
+            plt.plot(market_data.index, market_data['Normalized'], label=f"{market_ticker_input} Returns", color='red')
+            plt.title(f"Stock vs Market Returns: {ticker} vs {market_ticker_input}")
+            plt.xlabel("Date")
+            plt.ylabel("Normalized Price (%)")
+            plt.legend()
+            st.pyplot(plt)
         
             # Fetch stock info and statistics
             stock = yf.Ticker(ticker, session=session)
@@ -191,7 +208,8 @@ def main():
             display_financial_statements(stock)
 
         else:
-            st.error(f"No data found for {ticker}.")
+            st.error(f"No data found for {ticker} or {market_ticker_input}.")
 
 if __name__ == "__main__":
     main()
+
