@@ -161,11 +161,6 @@ def fetch_company_details(stock):
     industry = safe_get(info, 'industry')
     return sector, industry
 
-# Function to fetch company news
-def fetch_company_news(stock):
-    news = stock.news
-    return news[:5]  # Get top 5 news articles
-
 # Main Streamlit App
 def main():
     # Parse tickers input from the sidebar
@@ -190,22 +185,13 @@ def main():
             stock = yf.Ticker(ticker, session=session)
             ratios = calculate_ratios(stock)
             
-            # Fetch company details and news
+            # Fetch company details
             sector, industry = fetch_company_details(stock)
-            news = fetch_company_news(stock)
         
             # Display company details
             st.subheader(f"Company Details for {ticker}")
             st.write(f"**Sector:** {sector}")
             st.write(f"**Industry:** {industry}")
-            
-            # Display news
-            st.subheader(f"Latest News for {ticker}")
-            for article in news:
-                title = article.get('title', 'No title available')  # Safely get title
-                link = article.get('link', '#')  # Safely get link
-                st.write(f"**{title}**")
-                st.write(f"[Read more]({link})")
         
             # Display financial ratios in metric cards
             st.subheader(f"Financial Ratios for {ticker}")
