@@ -94,16 +94,26 @@ def fetch_yahoo_finance_statistics(stock):
     pe_ratio = safe_get(info, 'trailingPE')
     market_cap = safe_get(info, 'marketCap')
     dividend_yield = safe_get(info, 'dividendYield')
-    book_value = safe_get(info, 'bookValue')
+    price_to_book = safe_get(info, 'priceToBook')
     beta = safe_get(info, 'beta')
+    diluted_eps = safe_get(info, 'trailingEps')
+    profit_margin = safe_get(info, 'profitMargins') * 100 if 'profitMargins' in info else 'N/A'
+    operating_margin = safe_get(info, 'operatingMargins') * 100 if 'operatingMargins' in info else 'N/A'
+    return_on_assets = safe_get(info, 'returnOnAssets') * 100 if 'returnOnAssets' in info else 'N/A'
+    return_on_equity = safe_get(info, 'returnOnEquity') * 100 if 'returnOnEquity' in info else 'N/A'
     earnings_yield = (1 / pe_ratio) * 100 if pe_ratio != 'N/A' else 'N/A'
     
     return {
         'PE Ratio': pe_ratio,
         'Market Cap': market_cap,
         'Dividend Yield': dividend_yield * 100 if dividend_yield != 'N/A' else 'N/A',
-        'Book Value': book_value,
+        'Price to Book': price_to_book,
         'Beta': beta,
+        'Diluted EPS': diluted_eps,
+        'Profit Margin': profit_margin,
+        'Operating Margin': operating_margin,
+        'Return on Asset': return_on_assets,
+        'Return on Equity': return_on_equity,
         'Earnings Yield': earnings_yield
     }
 
@@ -160,7 +170,7 @@ def main():
             st.write(f"**Sector:** {sector}")
             st.write(f"**Industry:** {industry}")
         
-            # Display financial ratios in metric cards
+            # Display key statistics in metric cards
             st.subheader(f"Key Financial Statistics for {ticker}")
             cols = st.columns(3)
             
