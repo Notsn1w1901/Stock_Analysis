@@ -161,6 +161,20 @@ def fetch_company_details(stock):
     industry = safe_get(info, 'industry')
     return sector, industry
 
+# Function to display financial statements in tables
+def display_financial_statements(stock):
+    # Display balance sheet
+    st.subheader("Balance Sheet")
+    st.dataframe(stock.balance_sheet.T)
+    
+    # Display income statement
+    st.subheader("Income Statement")
+    st.dataframe(stock.financials.T)
+    
+    # Display cash flow statement
+    st.subheader("Cash Flow Statement")
+    st.dataframe(stock.cashflow.T)
+
 # Main Streamlit App
 def main():
     # Parse tickers input from the sidebar
@@ -223,6 +237,9 @@ def main():
                     <div class="value">{value}</div>
                 </div>
                 """, unsafe_allow_html=True)
+
+            # Display financial statements
+            display_financial_statements(stock)
 
         else:
             st.error(f"No data found for {ticker}.")
